@@ -23,13 +23,6 @@
 
 - 创建Native账号和百度网盘账号
 
-- http://www.delayboy.cn/BaiduDisk
-
-  ```
-  "client_id=kh0XKlKIj2TMIx9ROvuNa6bnX4oMtYBX&" +
-  "client_secret=cn81eyeq7UrbtXUbhN2GoGL5H5SX58dz";
-  ```
-
 - 点击右上角clear buffer
 
 - 再次点击clear buffer暂停
