@@ -46,7 +46,7 @@ func InitApiRouter(r *gin.Engine) {
 		admin.GET("/accounts", controllers.GetAccounts)
 		admin.DELETE("/account", controllers.DeleteAccount)
 		admin.GET("/drivers", controllers.GetDrivers)
-		admin.GET("/clear_cache", controllers.SyncEntry)
+		admin.GET("/clear_cache", controllers.ClearCacheEntry)
 
 		admin.GET("/metas", controllers.GetMetas)
 		admin.POST("/meta/create", controllers.CreateMeta)

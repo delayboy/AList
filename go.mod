@@ -12,6 +12,7 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/jlaffaye/ftp v0.0.0-20211117213618-11820403398b
 	github.com/json-iterator/go v1.1.12
+	github.com/lxn/walk v0.0.0-20210112085537-c389da54e794
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/pkg/sftp v1.13.4
 	github.com/robfig/cron/v3 v3.0.0
@@ -24,7 +25,12 @@ require (
 	gorm.io/gorm v1.23.1
 )
 
-require github.com/kr/fs v0.1.0 // indirect
+require (
+	github.com/akavel/rsrc v0.10.2 // indirect
+	github.com/kr/fs v0.1.0 // indirect
+	github.com/lxn/win v0.0.0-20210218163916-a377121e959e // indirect
+	gopkg.in/Knetic/govaluate.v3 v3.0.0 // indirect
+)
 
 require (
 	github.com/fatih/color v1.13.0

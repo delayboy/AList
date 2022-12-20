@@ -6,6 +6,7 @@ import (
 	"github.com/Xhofe/alist/conf"
 	_ "github.com/Xhofe/alist/drivers"
 	"github.com/Xhofe/alist/model"
+	"github.com/Xhofe/alist/mygui"
 	"github.com/Xhofe/alist/server"
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
@@ -32,6 +33,8 @@ func Init() bool {
 }
 
 func main() {
+	go mygui.GuiInit()
+
 	if conf.Version {
 		fmt.Printf("Built At: %s\nGo Version: %s\nAuthor: %s\nCommit ID: %s\nVersion: %s\nWebVersion: %s\n",
 			conf.BuiltAt, conf.GoVersion, conf.GitAuthor, conf.GitCommit, conf.GitTag, conf.WebTag)

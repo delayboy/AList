@@ -105,7 +105,7 @@ func (driver Native) Files(path string, account *model.Account) ([]model.File, e
 		if base.IsHideFile(filepath.Join(fullPath, f.Name())) {
 			continue
 		}
-		
+
 		time := f.ModTime()
 		file := model.File{
 			Name:      f.Name(),

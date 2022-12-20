@@ -1,5 +1,50 @@
 # 自制百度网盘同步工具——魔改版Alist
 
+# 魔改版AList 2.0 更新
+
+## 新特性
+
+- 自动添加下载队列（配合Internet Download Manager）
+
+- 导出同步日志列表，导入同步日志列表（json格式）
+
+- 在 `ListMode`下或其他模式中可以选择性批量上传、下载、删除某些文件，整个同步过程手动可控
+
+- 引入四种同步模式
+
+  | Mode                     | 本地没有的文件   | 大小不同的文件   | 网盘上没有的文件 | 相同的文件 |
+  | ------------------------ | ---------------- | ---------------- | ---------------- | ---------- |
+  | MirrorUploadMode镜像同步 | 删除网盘文件     | 上传本地文件     | 上传本地文件     | 跳过       |
+  | ListMode清单模式         | 记录日志手动处理 | 记录日志手动处理 | 记录日志手动处理 | 跳过       |
+  | DownloadMode下载模式     | 加入IDM下载队列  | 跳过             | 记录日志手动处理 | 跳过       |
+  | UploadMode上传模式       | 跳过             | 跳过             | 上传本地文件     | 跳过       |
+
+- 可选任务Id，任务编号从0开始。比如设置同步列表为
+
+  ```shell
+  nativeRootPaths：
+  Z:/Work/Notes
+  Z:/Computer/Program/Program_maker
+  A:/Program
+  A:/Software
+  A:/Resource
+  baiduRootPaths：
+  /Document/Notes
+  /Program/Program_maker
+  /Program
+  /Software
+  /Resource
+  ```
+
+  则TaskId=2则会同步 `A:/Program` 文件夹到百度网盘的 `/Program`文件夹
+
+- 
+
+Internet Download Manager环境设置
+
+- 设置UA头：在选项→下载→用户代理UA选项中设置UA为`pan.baidu.com`
+- 将Internet Download Manager文件夹安装目录加入到系统环境变量如将路径 `D:\Program Files\idm 6.38.18.2`加入到环境变量
+
 # 程序功能一览
 
 - 多文件夹同步 —— 本地文件更新到网盘、本地不存在的文件，百度网盘需要删除，按比大小的方式更新
@@ -23,6 +68,13 @@
 
 - 创建Native账号和百度网盘账号
 
+- http://www.delayboy.cn/BaiduDisk
+
+  ```
+  "client_id=kh0XKlKIj2TMIx9ROvuNa6bnX4oMtYBX&" +
+  "client_secret=cn81eyeq7UrbtXUbhN2GoGL5H5SX58dz";
+  ```
+
 - 点击右上角clear buffer
 
 - 再次点击clear buffer暂停
@@ -44,3 +96,4 @@
 - 极小概率丢失私密大文件
 - 小概率丢失私密小文件
 - 授权码盗用的可察觉性
+

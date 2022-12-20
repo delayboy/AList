@@ -138,6 +138,7 @@ func (driver Baidu) Link(args base.Args, account *model.Account) (*base.Link, er
 		return driver.LinkCrack(args, account)
 	}
 	link, error := driver.LinkOfficial(args, account)
+
 	return link, error
 }
 
@@ -155,18 +156,24 @@ func (driver Baidu) LinkOfficial(args base.Args, account *model.Account) (*base.
 		"fsids":  fmt.Sprintf("[%s]", file.Id),
 		"dlink":  "1",
 	}
-	_, err = driver.Get("/xpan/multimedia", params, &resp, account)
+	headers := map[string]string{
+		"User-Agent": "pan.baidu.com",
+		"Range":      "bytes=0-0,-1",
+	}
+	//_, err = driver.Get("/xpan/multimedia", params, &resp, account)
+	_, err = driver.Request("https://pan.baidu.com/rest/2.0"+"/xpan/multimedia", base.Get, headers, params, nil, nil, &resp, account)
 	if err != nil {
 		return nil, err
 	}
 	u := fmt.Sprintf("%s&access_token=%s", resp.List[0].Dlink, account.AccessToken)
-	res, err := base.NoRedirectClient.R().SetHeader("User-Agent", "pan.baidu.com").Head(u)
-	if err != nil {
-		return nil, err
-	}
-	//if res.StatusCode() == 302 {
-	u = res.Header().Get("location")
+	//res, err := base.NoRedirectClient.R().SetHeader("User-Agent", "pan.baidu.com").Head(u)
+	//if err != nil {
+	//	return nil, err
 	//}
+	//if res.StatusCode() == 302 {
+	//u = res.Header().Get("location")
+	//}
+
 	return &base.Link{
 		Url: u,
 		Headers: []base.Header{
