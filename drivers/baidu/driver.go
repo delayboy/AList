@@ -17,6 +17,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type Baidu struct{}
@@ -231,6 +232,7 @@ func (driver Baidu) Preview(path string, account *model.Account) (interface{}, e
 }
 
 func (driver Baidu) MakeDir(path string, account *model.Account) error {
+	path = encodeURIComponent(path)
 	_, err := driver.create(utils.Join(account.RootFolder, path), 0, 1, "", "", account)
 	return err
 }
@@ -278,7 +280,7 @@ func (driver Baidu) Copy(src string, dst string, account *model.Account) error {
 
 func (driver Baidu) Delete(path string, account *model.Account) error {
 	path = utils.Join(account.RootFolder, path)
-	data := []string{path}
+	data := []string{encodeURIComponent(path)} //使用url编码，否则对于特殊路径无法正常删除，比如路径中带+号的情况
 	_, err := driver.manage("delete", data, account)
 	return err
 }
@@ -408,6 +410,21 @@ func (driver Baidu) Upload(file *model.FileStream, account *model.Account) error
 		log.Infof("Upload进度:(%d%%)(%s)", i*100.0/totalLen, aimPath)
 	}
 	_, err = driver.create(path, file.GetSize(), 0, precreateResp.Uploadid, block_list_str, account)
+	retryNum := 0
+	for {
+		if err != nil && retryNum < 6 {
+			log.Errorf("继续尝试(%d)上传到百度网盘失败!(%s)", retryNum, file.Name)
+			retryNum++
+			time.Sleep(time.Second)
+			_, err = driver.create(path, file.GetSize(), 0, precreateResp.Uploadid, block_list_str, account)
+			if totalLen < 10 {
+				break
+			}
+		} else {
+			break
+		}
+	}
+
 	return err
 }
 

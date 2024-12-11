@@ -121,10 +121,10 @@ func (operator *SyncOperator) deleteBaiduFile(filePath string) bool {
 	for {
 		err := operator.driversBaidu.Delete(filePath, &operator.accountBaidu)
 		if err != nil {
-			log.Errorf("继续尝试(%d)文件删除失败(%s)", retryNum, filePath)
+			log.Errorf("继续尝试(%d)文件删除失败(%s)(%s)", retryNum, filePath, err)
 			retryNum++
 			operator.pauseAndSaveListener(retryNum)
-			time.Sleep(time.Second)
+			time.Sleep(time.Second * 3)
 		} else {
 			log.Infof("文件删除成功(%s)", filePath)
 			return true
@@ -173,7 +173,7 @@ func (operator *SyncOperator) CpToBaiduFile(nativePath string, baiduPath string,
 			err = operator.driversBaidu.Upload(&fileStream, &operator.accountBaidu)
 			if err != nil {
 				log.Errorf("继续尝试(%d)上传到百度网盘失败!(%s)->(%s)", retryNum, nativePath, aimPath)
-				retryNum++
+				retryNum += 3 //已经在Upload里Retry过了 因此直接加3
 				operator.pauseAndSaveListener(retryNum)
 				time.Sleep(time.Second)
 			} else {

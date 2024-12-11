@@ -138,7 +138,11 @@ func saveTableToFile() {
 	listFilePath := dlg.FilePath
 	var err error
 	if PathExists(listFilePath) {
-		listFile, err = os.OpenFile(listFilePath, os.O_RDWR, 0)
+		err := os.Remove(listFilePath)
+		if err != nil {
+			log.Errorf("删除%s文件失败", listFilePath)
+		}
+		listFile, err = os.OpenFile(listFilePath, os.O_CREATE, 0)
 	} else {
 		//新建文件
 		listFile, _ = os.Create(listFilePath)

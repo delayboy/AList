@@ -33,7 +33,6 @@ func Init() bool {
 }
 
 func main() {
-	go mygui.GuiInit()
 
 	if conf.Version {
 		fmt.Printf("Built At: %s\nGo Version: %s\nAuthor: %s\nCommit ID: %s\nVersion: %s\nWebVersion: %s\n",
@@ -50,6 +49,7 @@ func main() {
 	server.InitApiRouter(r)
 	base := fmt.Sprintf("%s:%d", conf.Conf.Address, conf.Conf.Port)
 	log.Infof("start server @ %s", base)
+	go mygui.GuiInit()
 	var err error
 	if conf.Conf.Scheme.Https {
 		err = r.RunTLS(base, conf.Conf.Scheme.CertFile, conf.Conf.Scheme.KeyFile)

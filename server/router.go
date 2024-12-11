@@ -13,6 +13,7 @@ func InitApiRouter(r *gin.Engine) {
 
 	// TODO from settings
 	Cors(r)
+	r.POST("/d/*path", controllers.DownPost)
 	r.GET("/d/*path", middlewares.DownCheck, controllers.Down)
 	r.GET("/p/*path", middlewares.DownCheck, controllers.Proxy)
 	r.GET("/favicon.ico", controllers.Favicon)

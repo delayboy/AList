@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/Xhofe/alist/conf"
+	"github.com/Xhofe/alist/drivers/base"
 	"github.com/lxn/walk"
 	"github.com/lxn/walk/declarative"
 	log "github.com/sirupsen/logrus"
@@ -26,11 +27,16 @@ func toSyncFilePk(actual interface{}) ([]SyncFilePk, error) {
 	return res, nil
 }
 
-func guiSetText(content string) {
+func GuiSetText(content string) {
 	err := outTE.SetText(content)
 	if err != nil {
 		log.Error(err)
 	}
+	outTE.Cursor()
+	/*for _, s := range strings.Split(content, "\n") {
+		outTE.AppendText(s + "\r\n")
+	}*/
+
 }
 
 // GuiInit 每一个源文件都可以包含一个init函数，该函数会在main函数执行前，被Go运行框架调用，也就是说init会在main函数前被调用
@@ -80,7 +86,6 @@ func GuiInit() {
 						Text: "Open Table",
 
 						OnClicked: func() {
-
 							tableView.SetModel(readTableFromFile())
 							//outTE.SetText(strings.ToUpper(inTE.Text()))
 
@@ -90,8 +95,20 @@ func GuiInit() {
 
 						Text: "Save Table",
 						OnClicked: func() {
+							base.RestyClient.RemoveProxy()
 							saveTableToFile()
 							//outTE.SetText(strings.ToUpper(inTE.Text()))
+
+						},
+					},
+					declarative.PushButton{
+						Text: "Set Proxy",
+						OnClicked: func() {
+							if base.RestyClient.IsProxySet() {
+								base.RestyClient.RemoveProxy()
+							} else {
+								base.RestyClient.SetProxy("http://127.0.0.1:8888")
+							}
 
 						},
 					},
@@ -104,7 +121,7 @@ func GuiInit() {
 						Children: []declarative.Widget{
 							//declarative.ListBox{AssignTo: &actionListBox, MultiSelection: true, Model: NewPkModel()},
 							declarative.TableView{AssignTo: &actionTableView, CheckBoxes: true, ColumnsOrderable: true, MultiSelection: true, Columns: titles, Model: NewCondomModel()},
-							declarative.TextEdit{AssignTo: &outTE, ReadOnly: true},
+							declarative.TextEdit{AssignTo: &outTE, ReadOnly: false, VScroll: true},
 							declarative.ComboBox{AssignTo: &combo, Model: allActions, CurrentIndex: 0},
 							declarative.PushButton{
 								Text: "do MyAction",

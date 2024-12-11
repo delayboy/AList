@@ -6,6 +6,7 @@ import (
 	"github.com/Xhofe/alist/conf"
 	"github.com/Xhofe/alist/drivers/base"
 	"github.com/Xhofe/alist/model"
+	"github.com/Xhofe/alist/mygui"
 	"github.com/Xhofe/alist/server/common"
 	"github.com/Xhofe/alist/utils"
 	"github.com/gin-gonic/gin"
@@ -106,6 +107,7 @@ func Path(c *gin.Context) {
 				return
 			}
 			file.Url = link.Url
+			mygui.GuiSetText(fmt.Sprintf("wget  --user-agent=\"pan.baidu.com\" \"%s\" -O \"%s\"", file.Url, file.Name))
 		}
 		c.JSON(200, common.Resp{
 			Code:    200,

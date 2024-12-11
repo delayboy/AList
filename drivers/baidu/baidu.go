@@ -10,6 +10,7 @@ import (
 	jsoniter "github.com/json-iterator/go"
 	"path"
 	"strconv"
+	"strings"
 )
 
 func (driver Baidu) RefreshToken(account *model.Account) error {
@@ -49,7 +50,9 @@ func (driver Baidu) refreshToken(account *model.Account) error {
 }
 
 func (driver Baidu) Request(fullurl string, method int, headers, query, form map[string]string, data interface{}, resp interface{}, account *model.Account) ([]byte, error) {
+
 	req := base.RestyClient.R()
+
 	req.SetQueryParam("access_token", account.AccessToken)
 	if headers != nil {
 		req.SetHeaders(headers)
@@ -105,7 +108,10 @@ func (driver Baidu) Get(pathname string, params map[string]string, resp interfac
 }
 
 func (driver Baidu) Post(pathname string, params map[string]string, data interface{}, resp interface{}, account *model.Account) ([]byte, error) {
-	return driver.Request("https://pan.baidu.com/rest/2.0"+pathname, base.Post, nil, params, nil, data, resp, account)
+	headers := map[string]string{
+		"Content-Type": "application/x-www-form-urlencoded; charset=utf-8",
+	}
+	return driver.Request("https://pan.baidu.com/rest/2.0"+pathname, base.Post, headers, params, nil, data, resp, account)
 }
 
 func (driver Baidu) manage(opera string, filelist interface{}, account *model.Account) ([]byte, error) {
@@ -117,7 +123,7 @@ func (driver Baidu) manage(opera string, filelist interface{}, account *model.Ac
 	if err != nil {
 		return nil, err
 	}
-	data := fmt.Sprintf("async=0&filelist=%s&ondup=newcopy", string(marshal))
+	data := fmt.Sprintf("async=0&filelist=%s&ondup=overwrite", string(marshal))
 	return driver.Post("/xpan/file", params, data, nil, account)
 }
 
@@ -172,11 +178,22 @@ func (driver Baidu) GetFiles(dir string, account *model.Account) ([]model.File, 
 	}
 	return res, nil
 }
-
+func customURLEncode(s string) string {
+	s = strings.ReplaceAll(s, "%", "%25")
+	s = strings.ReplaceAll(s, "+", "%2B")
+	s = strings.ReplaceAll(s, " ", "%20")
+	//s = strings.ReplaceAll(s, "/", "%2F")
+	s = strings.ReplaceAll(s, "?", "%3F")
+	s = strings.ReplaceAll(s, "#", "%23")
+	s = strings.ReplaceAll(s, "&", "%26")
+	s = strings.ReplaceAll(s, "=", "%3D")
+	return s
+}
 func (driver Baidu) create(path string, size uint64, isdir int, uploadid, block_list string, account *model.Account) ([]byte, error) {
 	params := map[string]string{
 		"method": "create",
 	}
+
 	data := fmt.Sprintf("path=%s&size=%d&isdir=%d", path, size, isdir)
 	if uploadid != "" {
 		data += fmt.Sprintf("&uploadid=%s&block_list=%s", uploadid, block_list)

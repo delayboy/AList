@@ -4,12 +4,13 @@ import (
 	"encoding/gob"
 	"encoding/json"
 	"fmt"
+	"github.com/Xhofe/alist/conf"
 	"github.com/Xhofe/alist/drivers/base"
 	"github.com/Xhofe/alist/model"
-	"github.com/Xhofe/alist/server/controllers"
 	"github.com/Xhofe/alist/utils"
 	log "github.com/sirupsen/logrus"
 	"os"
+	"os/exec"
 	"strconv"
 	"strings"
 	"sync"
@@ -208,9 +209,17 @@ func (operator *SyncOperator) listSync(nativeRootPath string, baiduRootPath stri
 		nativeFilesMap := operator.GetNativeFilesMap(nowFileNativePath)
 		nowFileAimPath := utils.Join(baiduRootPath, nowFile.Url)
 		baiduFileMap, hasDir := operator.GetBaiduFilesMap(nowFileAimPath)
-		if !hasDir {
-			log.Errorf("致命错误，百度网盘没有找到该文件夹(%s)", nowFileAimPath)
-			return
+		retryNum := 0
+		for {
+			if !hasDir {
+				time.Sleep(time.Second)
+				retryNum++
+				baiduFileMap, hasDir = operator.GetBaiduFilesMap(nowFileAimPath)
+				log.Errorf("致命错误，百度网盘没有找到该文件夹(%s),重新尝试(%d)次", nowFileAimPath, retryNum)
+				operator.pauseAndSaveListener(retryNum)
+			} else {
+				break
+			}
 		}
 
 		operator.pauseAndSaveListener(0)
@@ -221,7 +230,7 @@ func (operator *SyncOperator) listSync(nativeRootPath string, baiduRootPath stri
 				percent := 100.0
 				percent = percent * float64(operator.FinishFileNum) / float64(operator.TotalFileNum)
 				precentStr := fmt.Sprintf("[%.2f%%](scan %d, new %d,update %d,delete %d)", percent, operator.FinishFileNum, operator.NewFileNum, operator.UpdateFileNum, operator.DeleteFileNum)
-				guiSetText(precentStr)
+				GuiSetText(precentStr)
 			}
 			if baiduFile, hasFile := baiduFileMap[file.Name]; hasFile {
 				operator.pauseAndSaveListener(0)
@@ -255,7 +264,12 @@ func (operator *SyncOperator) listSync(nativeRootPath string, baiduRootPath stri
 	operator.Queue = nil
 	deleteFile(SyncCacheFilePath)
 	listFile.Close()
-
+	if strings.Contains(getShutDownModeSetting(), "True") {
+		shutdownCmd := exec.Command("shutdown", "-s", "-t", "120")
+		if err := shutdownCmd.Run(); err != nil {
+			log.Error(err)
+		}
+	}
 }
 func InitSyncOperator(accounts []model.Account) SyncOperator {
 	var driversBaidu base.Driver
@@ -367,7 +381,17 @@ func deSerializeJson(g string, e any) {
 	}
 
 }
+func getShutDownModeSetting() string {
+	setting, err := model.GetSettingByKey("ShutdownAfterTask")
+	if err == nil {
+		return setting.Value
+	} else {
 
+		newSetting := model.SettingItem{Key: "ShutdownAfterTask", Value: "True", Values: "True,False", Type: base.TypeSelect, Description: "whether shutdown after task over"}
+		_ = model.SaveSetting(newSetting)
+	}
+	return "True"
+}
 func getSyncModeSetting() string {
 	setting, err := model.GetSettingByKey("SyncMode")
 	if err == nil {
@@ -415,8 +439,13 @@ func getSyncPathSetting(key string, defaultPath []string) []string {
 	}
 	return rootPaths
 }
+func ClearCache() error {
+	err := conf.Cache.Clear(conf.Ctx)
+	log.Info("cache has been cleared, we will redo file sync")
+	return err
+}
 func SyncEntry() {
-	err := controllers.ClearCache()
+	err := ClearCache()
 	base.InitFileHideList()
 	if err != nil || pause {
 		log.Errorf("暂停")
